@@ -1,72 +1,115 @@
-// ARRAY DE ARMAS
-const armas = ["Espada", "Arco", "Daga", "Martillo"];
-const precios = [500, 350, 200, 700];
+// ARRAY DE OBJETOS
+const armas = [
+    { id: 1, nombre: "Espada", precio: 500 },
+    { id: 2, nombre: "Arco", precio: 350 },
+    { id: 3, nombre: "Daga", precio: 200 },
+    { id: 4, nombre: "Martillo", precio: 700 }
+];
 
-// VARIABLE TOTAL DE ORO GASTADO
-let oroGastado = 0;
+// CARRITO CON LOCALSTORAGE
+let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 
+// MENSAJE EN PANTALLA
+function mostrarMensaje(texto) {
+    const mensaje = document.getElementById("mensaje");
+    mensaje.textContent = texto;
 
-// FUNCION 1: mostrar armas disponibles
+    setTimeout(() => {
+        mensaje.textContent = "";
+    }, 2000);
+}
+
+// MOSTRAR ARMAS
 function mostrarArmas() {
 
-    let lista = "Armas disponibles en la tienda:\n";
+    const contenedor = document.getElementById("contenedor-armas");
 
-    for (let i = 0; i < armas.length; i++) {
+    armas.forEach(arma => {
 
-        lista += i + " - " + armas[i] + " (" + precios[i] + " de oro)\n";
+        const div = document.createElement("div");
 
-    }
+        div.innerHTML = `
+            <p><strong>${arma.nombre}</strong> - ${arma.precio} oro</p>
+            <button data-id="${arma.id}">Comprar</button>
+        `;
 
-    alert(lista);
+        contenedor.appendChild(div);
+    });
+
+    // EVENTOS A BOTONES
+    document.querySelectorAll("button[data-id]").forEach(boton => {
+        boton.addEventListener("click", (e) => {
+            agregarAlCarrito(parseInt(e.target.dataset.id));
+        });
+    });
 }
 
+// AGREGAR AL CARRITO
+function agregarAlCarrito(id) {
 
-// FUNCION 2: elegir arma
-function elegirArma() {
+    const arma = armas.find(a => a.id === id);
 
-    let opcion = prompt("Ingresa el número del arma que deseas comprar:");
+    const existe = carrito.find(item => item.id === id);
 
-    if (opcion >= 0 && opcion < armas.length) {
-
-        oroGastado = oroGastado + precios[opcion];
-
-        alert(
-        "Compraste: " + armas[opcion] +
-        "\nCosto: " + precios[opcion] + " de oro" +
-        "\nOro gastado hasta ahora: " + oroGastado
-        );
-
+    if (existe) {
+        existe.cantidad++;
     } else {
-
-        alert("No existe esa arma en la tienda.");
-
+        carrito.push({ ...arma, cantidad: 1 });
     }
+
+    localStorage.setItem("carrito", JSON.stringify(carrito));
+
+    mostrarMensaje("Agregaste " + arma.nombre);
+    mostrarCarrito();
 }
 
+// MOSTRAR CARRITO
+function mostrarCarrito() {
 
-// FUNCION 3: mostrar total gastado
-function mostrarResumen() {
+    const lista = document.getElementById("carrito");
+    const totalSpan = document.getElementById("total");
 
-    alert("Terminaste tu compra.\nTotal de oro gastado: " + oroGastado);
+    lista.innerHTML = "";
 
-    console.log("Total de oro gastado:", oroGastado);
+    let total = 0;
+
+    carrito.forEach(item => {
+
+        const li = document.createElement("li");
+
+        li.innerHTML = `
+            ${item.nombre} x${item.cantidad} - ${item.precio * item.cantidad} oro
+            <button onclick="eliminarItem(${item.id})">❌</button>
+        `;
+
+        lista.appendChild(li);
+
+        total += item.precio * item.cantidad;
+    });
+
+    totalSpan.textContent = total;
 }
 
+// ELIMINAR ITEM
+function eliminarItem(id) {
 
+    carrito = carrito.filter(item => item.id !== id);
 
-// PROGRAMA PRINCIPAL
+    localStorage.setItem("carrito", JSON.stringify(carrito));
 
-alert("Bienvenido a la tienda de armas del reino");
-
-let seguirComprando = true;
-
-while (seguirComprando) {
-
-    mostrarArmas();
-
-    elegirArma();
-
-    seguirComprando = confirm("¿Quieres comprar otra arma?");
+    mostrarCarrito();
 }
 
-mostrarResumen();
+// VACIAR CARRITO
+document.getElementById("vaciar").addEventListener("click", () => {
+
+    carrito = [];
+    localStorage.removeItem("carrito");
+
+    mostrarMensaje("Carrito vaciado");
+    mostrarCarrito();
+});
+
+// INICIO
+mostrarArmas();
+mostrarCarrito();

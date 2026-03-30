@@ -2,26 +2,26 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Simulador de Tienda de Armas</title>
+<title>Tienda de Armas</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-<h1>Simulador de tienda de armas</h1>
+<h1>⚔️ Tienda de Armas</h1>
 
-<p>
-Este simulador representa una tienda dentro de un videojuego donde el jugador
-puede comprar diferentes armas utilizando cuadros de diálogo de JavaScript.
-El usuario selecciona armas disponibles y el sistema calcula el total de oro
-gastado.
-</p>
+<div id="mensaje"></div>
 
-<p>
-La interacción se realiza mediante prompt, confirm y alert, mientras que los
-resultados también se pueden observar en la consola de JavaScript.
-</p>
+<h2>Armas disponibles</h2>
+<div id="contenedor-armas"></div>
+
+<h2>🛒 Carrito</h2>
+<ul id="carrito"></ul>
+
+<p>Total: <span id="total">0</span> oro</p>
+
+<button id="vaciar">Vaciar carrito</button>
 
 <script src="js/main.js"></script>
-
 </body>
 </html>
