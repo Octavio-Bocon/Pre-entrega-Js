@@ -1,4 +1,4 @@
-// ARRAY DE OBJETOS
+// ARMAS
 const armas = [
     { id: 1, nombre: "Espada", precio: 500 },
     { id: 2, nombre: "Arco", precio: 350 },
@@ -6,18 +6,23 @@ const armas = [
     { id: 4, nombre: "Martillo", precio: 700 }
 ];
 
-// CARRITO CON LOCALSTORAGE
+// ESTADO
 let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+let oro = 2000;
 
-// MENSAJE EN PANTALLA
+
+// MENSAJE FADE
 function mostrarMensaje(texto) {
     const mensaje = document.getElementById("mensaje");
+
     mensaje.textContent = texto;
+    mensaje.style.opacity = 1;
 
     setTimeout(() => {
-        mensaje.textContent = "";
+        mensaje.style.opacity = 0;
     }, 2000);
 }
+
 
 // MOSTRAR ARMAS
 function mostrarArmas() {
@@ -28,15 +33,17 @@ function mostrarArmas() {
 
         const div = document.createElement("div");
 
+        div.style.animationDelay = `${arma.id * 0.1}s`;
+
         div.innerHTML = `
-            <p><strong>${arma.nombre}</strong> - ${arma.precio} oro</p>
+            <p><strong>${arma.nombre}</strong></p>
+            <p>${arma.precio} oro 🪙</p>
             <button data-id="${arma.id}">Comprar</button>
         `;
 
         contenedor.appendChild(div);
     });
 
-    // EVENTOS A BOTONES
     document.querySelectorAll("button[data-id]").forEach(boton => {
         boton.addEventListener("click", (e) => {
             agregarAlCarrito(parseInt(e.target.dataset.id));
@@ -44,10 +51,19 @@ function mostrarArmas() {
     });
 }
 
+
 // AGREGAR AL CARRITO
 function agregarAlCarrito(id) {
 
     const arma = armas.find(a => a.id === id);
+
+    if (oro < arma.precio) {
+        mostrarMensaje("❌ No tenés suficiente oro");
+        return;
+    }
+
+    oro -= arma.precio;
+    document.getElementById("oro").textContent = oro;
 
     const existe = carrito.find(item => item.id === id);
 
@@ -59,9 +75,10 @@ function agregarAlCarrito(id) {
 
     localStorage.setItem("carrito", JSON.stringify(carrito));
 
-    mostrarMensaje("Agregaste " + arma.nombre);
+    mostrarMensaje("⚔️ Compraste " + arma.nombre);
     mostrarCarrito();
 }
+
 
 // MOSTRAR CARRITO
 function mostrarCarrito() {
@@ -78,7 +95,7 @@ function mostrarCarrito() {
         const li = document.createElement("li");
 
         li.innerHTML = `
-            ${item.nombre} x${item.cantidad} - ${item.precio * item.cantidad} oro
+            ${item.nombre} x${item.cantidad} - ${item.precio * item.cantidad} oro 🪙
             <button onclick="eliminarItem(${item.id})">❌</button>
         `;
 
@@ -90,8 +107,16 @@ function mostrarCarrito() {
     totalSpan.textContent = total;
 }
 
+
 // ELIMINAR ITEM
 function eliminarItem(id) {
+
+    const item = carrito.find(p => p.id === id);
+
+    if (item) {
+        oro += item.precio * item.cantidad;
+        document.getElementById("oro").textContent = oro;
+    }
 
     carrito = carrito.filter(item => item.id !== id);
 
@@ -100,16 +125,51 @@ function eliminarItem(id) {
     mostrarCarrito();
 }
 
+
 // VACIAR CARRITO
 document.getElementById("vaciar").addEventListener("click", () => {
+
+    carrito.forEach(item => {
+        oro += item.precio * item.cantidad;
+    });
 
     carrito = [];
     localStorage.removeItem("carrito");
 
-    mostrarMensaje("Carrito vaciado");
+    document.getElementById("oro").textContent = oro;
+
+    mostrarMensaje("🧹 Carrito vaciado");
     mostrarCarrito();
 });
 
+
+// FINALIZAR COMPRA
+document.getElementById("finalizar").addEventListener("click", () => {
+
+    if (carrito.length === 0) {
+        mostrarMensaje("⚠️ Tu carrito está vacío");
+        return;
+    }
+
+    let resumen = "🧾 Compra realizada:\n\n";
+
+    carrito.forEach(item => {
+        resumen += `${item.nombre} x${item.cantidad}\n`;
+    });
+
+    resumen += "\n🪙 Oro restante: " + oro;
+
+    alert(resumen);
+
+    carrito = [];
+    localStorage.removeItem("carrito");
+
+    mostrarCarrito();
+});
+
+
 // INICIO
+document.getElementById("oro").textContent = oro;
+
 mostrarArmas();
 mostrarCarrito();
